@@ -17,25 +17,30 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path, include
 from rest_framework import routers
-import os
-
-# Dummy viewsets for demonstration (replace with actual viewsets if implemented)
-from rest_framework import viewsets
+from rest_framework.decorators import api_view
 from rest_framework.response import Response
-from rest_framework.decorators import action
-
-class DummyViewSet(viewsets.ViewSet):
-    def list(self, request):
-        return Response({'message': 'API endpoint works'})
+from rest_framework.reverse import reverse
+from . import views
 
 router = routers.DefaultRouter()
-router.register(r'users', DummyViewSet, basename='users')
-router.register(r'teams', DummyViewSet, basename='teams')
-router.register(r'activities', DummyViewSet, basename='activities')
-router.register(r'leaderboard', DummyViewSet, basename='leaderboard')
-router.register(r'workouts', DummyViewSet, basename='workouts')
+router.register(r'users', views.UserViewSet, basename='users')
+router.register(r'teams', views.TeamViewSet, basename='teams')
+router.register(r'activities', views.ActivityViewSet, basename='activities')
+router.register(r'leaderboard', views.LeaderboardViewSet, basename='leaderboard')
+router.register(r'workouts', views.WorkoutViewSet, basename='workouts')
+
+@api_view(['GET'])
+def api_root(request, format=None):
+    return Response({
+        'users': reverse('users-list', request=request, format=format),
+        'teams': reverse('teams-list', request=request, format=format),
+        'activities': reverse('activities-list', request=request, format=format),
+        'leaderboard': reverse('leaderboard-list', request=request, format=format),
+        'workouts': reverse('workouts-list', request=request, format=format),
+    })
 
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('api/', include(router.urls)),
+    path('', api_root, name='api-root'),
 ]
